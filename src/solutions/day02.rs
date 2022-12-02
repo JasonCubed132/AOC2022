@@ -108,11 +108,11 @@ impl SolutionLinear<Vec<(RPS, RPS)>, i32, i32> for Day2Solution {
     }
 
     fn part1(input: &mut Vec<(RPS, RPS)>) -> Result<i32> {
-        let total = input.iter().fold(0, |acc, (them, you)| {
-            let t1 = acc + you.score();
-            let t2 = t1 + get_your_result(*you, *them).score();
-            t2
-        });
+        // let total = input.iter().fold(0, |acc, (them, you)| {
+        //     let t1 = acc + you.score();
+        //     let t2 = t1 + get_your_result(*you, *them).score();
+        //     t2
+        // });
 
         // let mut total = 0;
         // 
@@ -121,6 +121,10 @@ impl SolutionLinear<Vec<(RPS, RPS)>, i32, i32> for Day2Solution {
         //     total += you.score();
         //     total += get_your_result(*you, *them).score();
         // }
+
+        let total = input.iter().map(|(them, you)| {
+            you.score() + get_your_result(*you, *them).score()
+        }).sum::<i32>();
 
         Ok(total)
     }
