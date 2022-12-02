@@ -1,3 +1,6 @@
+# Acknowledgement
+This is using the AOC Rust template provided by Ryan R Murray [https://github.com/RyanRMurray/AOC2022](https://github.com/RyanRMurray/AOC2022)
+
 # AOC2022
 
 Advent of Code is an event run by Eric Wastl. For each day leading up to Christmas, programmers are tasked with solving two small problems each day.
