@@ -74,23 +74,6 @@ pub fn rps_to_rps_result(input: RPS) -> RPSResult {
     }
 }
 
-pub fn str_to_rps_result(input: &str) -> Result<RPSResult> {
-    match input {
-        "X" => {
-            Ok(RPSResult::Lose)
-        },
-        "Y" => {
-            Ok(RPSResult::Draw)
-        },
-        "Z" => {
-            Ok(RPSResult::Win)
-        },
-        _ => {
-            Err(anyhow!("Unknown value {input}"))
-        }
-    }
-}
-
 pub fn get_your_result(you: RPS, them: RPS) -> RPSResult {
     match you {
         RPS::Rock => {
@@ -139,42 +122,41 @@ pub fn get_your_required_move(expected_result: RPSResult, them: RPS) -> RPS {
     }
 }
 
-impl SolutionLinear<Vec<[RPS; 2]>, i32, i32> for Day2Solution {
-    fn load(input: &str) -> Result<Vec<[RPS; 2]>> {
-        let mut moves: Vec<[RPS; 2]> = Vec::new();
+impl SolutionLinear<Vec<(RPS, RPS)>, i32, i32> for Day2Solution {
+    fn load(input: &str) -> Result<Vec<(RPS, RPS)>> {
+        let mut moves: Vec<(RPS, RPS)> = Vec::new();
         for line in input.lines() {
             let items = line.split(" ").collect_vec();
             moves.push(
-                [
+                (
                     str_to_rps(items[0]).unwrap(), 
                     str_to_rps(items[1]).unwrap()
-                ]
+                )
             );
         }
         Ok(moves)
     }
 
-    fn part1(input: &mut Vec<[RPS; 2]>) -> Result<i32> {
+    fn part1(input: &mut Vec<(RPS, RPS)>) -> Result<i32> {
         let mut total = 0;
 
         for turn in input {
-            let you = turn[1];
-            let them = turn[0];
+            let (them, you) = turn;
             total += you.score();
-            total += get_your_result(you, them).score();
+            total += get_your_result(*you, *them).score();
         }
 
         Ok(total)
     }
 
-    fn part2(input: &mut Vec<[RPS; 2]>, part_1_solution: i32) -> Result<i32> {
+    fn part2(input: &mut Vec<(RPS, RPS)>, part_1_solution: i32) -> Result<i32> {
         let mut total = 0;
 
         for turn in input {
-            let result = rps_to_rps_result(turn[1]);
-            let them = turn[0];
+            let (them, unconverted_result) = turn;
+            let result = rps_to_rps_result(*unconverted_result);
 
-            let your_move = get_your_required_move(result, them);
+            let your_move = get_your_required_move(result, *them);
             total += your_move.score();
             total += result.score();
         }
