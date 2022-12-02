@@ -130,16 +130,22 @@ impl SolutionLinear<Vec<(RPS, RPS)>, i32, i32> for Day2Solution {
     }
 
     fn part2(input: &mut Vec<(RPS, RPS)>, part_1_solution: i32) -> Result<i32> {
-        let mut total = 0;
+        // let mut total = 0;
 
-        for turn in input {
-            let (them, unconverted_result) = turn;
+        // for turn in input {
+        //     let (them, unconverted_result) = turn;
+        //     let result = unconverted_result.to_rps_result();
+
+        //     let your_move = get_your_required_move(result, *them);
+        //     total += your_move.score();
+        //     total += result.score();
+        // }
+
+        let total = input.iter().map(|(them, unconverted_result)| {
             let result = unconverted_result.to_rps_result();
-
             let your_move = get_your_required_move(result, *them);
-            total += your_move.score();
-            total += result.score();
-        }
+            your_move.score() + result.score()
+        }).sum::<i32>();
 
         Ok(total)
     }
