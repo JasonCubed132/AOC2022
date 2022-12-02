@@ -20,6 +20,20 @@ impl RPS {
             Self::Scissors => 3
         }
     }
+
+    fn to_rps_result(&self) -> RPSResult {
+        match *self {
+            Self::Rock => {
+                RPSResult::Lose
+            },
+            Self::Paper => {
+                RPSResult::Draw
+            },
+            Self::Scissors => {
+                RPSResult::Win
+            }
+        }
+    }
 }
 
 #[derive(PartialEq, Eq, Debug, Copy, Clone)]
@@ -60,65 +74,21 @@ pub fn str_to_rps(input: &str) -> Result<RPS> {
     }
 }
 
-pub fn rps_to_rps_result(input: RPS) -> RPSResult {
-    match input {
-        RPS::Rock => {
-            RPSResult::Lose
-        },
-        RPS::Paper => {
-            RPSResult::Draw
-        },
-        RPS::Scissors => {
-            RPSResult::Win
-        }
-    }
-}
+
 
 pub fn get_your_result(you: RPS, them: RPS) -> RPSResult {
-    match you {
-        RPS::Rock => {
-            match them {
-                RPS::Rock => { RPSResult::Draw },
-                RPS::Paper => { RPSResult::Lose },
-                RPS::Scissors => { RPSResult::Win }
-            }
-        },
-        RPS::Paper => {
-            match them {
-                RPS::Rock => { RPSResult::Win },
-                RPS::Paper => { RPSResult::Draw },
-                RPS::Scissors => { RPSResult::Lose}
-            }
-        },
-        RPS::Scissors => {
-            match them {
-                RPS::Rock => { RPSResult::Lose },
-                RPS::Paper => { RPSResult::Win },
-                RPS::Scissors => { RPSResult::Draw }
-            }
-        }
+    match (you, them) {
+        (RPS::Rock, RPS::Scissors) | (RPS::Paper, RPS::Rock) | (RPS::Scissors, RPS::Paper) => { RPSResult::Win },
+        (RPS::Rock, RPS::Rock) | (RPS::Paper, RPS::Paper) | (RPS::Scissors, RPS::Scissors) => { RPSResult::Draw },
+        (RPS::Rock, RPS::Paper) | (RPS::Paper, RPS::Scissors) | (RPS::Scissors, RPS::Rock) => { RPSResult::Lose }
     }
 }
 
 pub fn get_your_required_move(expected_result: RPSResult, them: RPS) -> RPS {
-    match expected_result {
-        RPSResult::Win => {
-            match them {
-                RPS::Rock => { RPS::Paper },
-                RPS::Paper => { RPS::Scissors },
-                RPS::Scissors => { RPS::Rock }
-            }
-        },
-        RPSResult::Draw => {
-            them
-        },
-        RPSResult::Lose => {
-            match them {
-                RPS::Rock => { RPS::Scissors },
-                RPS::Paper => { RPS::Rock },
-                RPS::Scissors => { RPS::Paper }
-            }
-        }
+    match (expected_result, them) {
+        (RPSResult::Win, RPS::Scissors) | (RPSResult::Draw, RPS::Rock) | (RPSResult::Lose, RPS::Paper) => { RPS::Rock },
+        (RPSResult::Win, RPS::Rock) | (RPSResult::Draw, RPS::Paper) | (RPSResult::Lose, RPS::Scissors) => { RPS::Paper },
+        (RPSResult::Win, RPS::Paper) | (RPSResult::Draw, RPS::Scissors) | (RPSResult::Lose, RPS::Rock) => { RPS::Scissors }
     }
 }
 
@@ -138,13 +108,19 @@ impl SolutionLinear<Vec<(RPS, RPS)>, i32, i32> for Day2Solution {
     }
 
     fn part1(input: &mut Vec<(RPS, RPS)>) -> Result<i32> {
-        let mut total = 0;
+        let total = input.iter().fold(0, |acc, (them, you)| {
+            let t1 = acc + you.score();
+            let t2 = t1 + get_your_result(*you, *them).score();
+            t2
+        });
 
-        for turn in input {
-            let (them, you) = turn;
-            total += you.score();
-            total += get_your_result(*you, *them).score();
-        }
+        // let mut total = 0;
+        // 
+        // for turn in input {
+        //     let (them, you) = turn;
+        //     total += you.score();
+        //     total += get_your_result(*you, *them).score();
+        // }
 
         Ok(total)
     }
@@ -154,7 +130,7 @@ impl SolutionLinear<Vec<(RPS, RPS)>, i32, i32> for Day2Solution {
 
         for turn in input {
             let (them, unconverted_result) = turn;
-            let result = rps_to_rps_result(*unconverted_result);
+            let result = unconverted_result.to_rps_result();
 
             let your_move = get_your_required_move(result, *them);
             total += your_move.score();
