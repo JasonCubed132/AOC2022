@@ -1,4 +1,3 @@
-
 use crate::utils::solver_types::{solve_linear, SolutionLinear};
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
@@ -26,12 +25,7 @@ impl SolutionLinear<Vec<(Vec<char>, Vec<char>)>, i32, i32> for Day3Solution {
         for line in input.lines() {
             let stuff = line.chars().collect_vec();
             let half = stuff.len() / 2;
-            output.push(
-                (
-                    stuff[0..half].to_vec(),
-                    stuff[half..stuff.len()].to_vec()
-                )
-            );
+            output.push((stuff[0..half].to_vec(), stuff[half..stuff.len()].to_vec()));
         }
         Ok(output)
     }
@@ -54,34 +48,41 @@ impl SolutionLinear<Vec<(Vec<char>, Vec<char>)>, i32, i32> for Day3Solution {
     }
 
     fn part2(input: &mut Vec<(Vec<char>, Vec<char>)>, part_1_solution: i32) -> Result<i32> {
-        let processed_input: Vec<HashSet<char>> = input.iter().map(|(bag_a, bag_b)| {
-            let bag_a_hash: HashSet<char> = bag_a.iter().copied().collect();
-            let bag_b_hash: HashSet<char> = bag_b.iter().copied().collect();
-            let common: HashSet<char> = bag_a_hash.union(&bag_b_hash).copied().collect();
-            common
-        }).collect();
+        // Re-unify parts of bags as they don't need to be separate here.
+        let processed_input: Vec<HashSet<char>> = input
+            .iter()
+            .map(|(bag_a, bag_b)| {
+                let bag_a_hash: HashSet<char> = bag_a.iter().copied().collect();
+                let bag_b_hash: HashSet<char> = bag_b.iter().copied().collect();
+                let common: HashSet<char> = bag_a_hash.union(&bag_b_hash).copied().collect();
+                common
+            })
+            .collect();
 
-        let mut index = 0;
+        // Group into 3s
+        let groups = processed_input.iter().chunks(3);
+
         let mut total = 0;
-        loop {
-            // let a = &processed_input[index];
-            // println!("{a:?}");
-            // let a = &processed_input[index+1];
-            // println!("{a:?}");
-            // let a = &processed_input[index+2];
-            // println!("{a:?}");
-            let common_a_b: HashSet<char> = processed_input[index].intersection(&processed_input[index+1]).copied().collect();
-            // println!("{common_a_b:?}");
-            let common_a_b_c: Vec<char> = common_a_b.intersection(&processed_input[index+2]).copied().collect();
-            // println!("{common_a_b_c:?}");
-            if common_a_b_c.len() != 1 {
-                return Err(anyhow!("More or less than 1 item in common between three elves at index {index}"));
-            }
-            total += item_to_priority(common_a_b_c[0]).unwrap();
 
-            if index + 3 >= processed_input.len() { break };
-            index += 3;
+        for group in &groups {
+            let group_vec: Vec<&HashSet<char>> = group.collect();
+            let a = group_vec[0];
+            let b = group_vec[1];
+            let c = group_vec[2];
+
+            let mut common_a_b_c: HashSet<char> = a.intersection(b).copied().collect();
+            common_a_b_c.retain(|k| c.contains(k));
+
+            if common_a_b_c.len() != 1 {
+                return Err(anyhow!(
+                    "More or less than 1 item in common between three elves"
+                ));
+            }
+
+            let common_vec: Vec<char> = common_a_b_c.iter().copied().collect();
+            total += item_to_priority(common_vec[0]).unwrap();
         }
+
         Ok(total)
     }
 }

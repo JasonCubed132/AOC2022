@@ -1,4 +1,3 @@
-
 use crate::utils::solver_types::{solve_linear, SolutionLinear};
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
@@ -9,7 +8,7 @@ pub struct Day2Solution {}
 pub enum RPS {
     Rock,
     Paper,
-    Scissors
+    Scissors,
 }
 
 impl RPS {
@@ -17,21 +16,15 @@ impl RPS {
         match *self {
             Self::Rock => 1,
             Self::Paper => 2,
-            Self::Scissors => 3
+            Self::Scissors => 3,
         }
     }
 
     fn to_rps_result(&self) -> RPSResult {
         match *self {
-            Self::Rock => {
-                RPSResult::Lose
-            },
-            Self::Paper => {
-                RPSResult::Draw
-            },
-            Self::Scissors => {
-                RPSResult::Win
-            }
+            Self::Rock => RPSResult::Lose,
+            Self::Paper => RPSResult::Draw,
+            Self::Scissors => RPSResult::Win,
         }
     }
 }
@@ -40,7 +33,7 @@ impl RPS {
 pub enum RPSResult {
     Lose,
     Draw,
-    Win
+    Win,
 }
 
 impl RPSResult {
@@ -48,7 +41,7 @@ impl RPSResult {
         match *self {
             Self::Lose => 0,
             Self::Draw => 3,
-            Self::Win => 6
+            Self::Win => 6,
         }
     }
 }
@@ -59,36 +52,38 @@ pub fn day02(input: &str) -> Result<f32> {
 
 pub fn str_to_rps(input: &str) -> Result<RPS> {
     match input {
-        "A" | "X" => {
-            Ok(RPS::Rock)
-        },
-        "B" | "Y" => {
-            Ok(RPS::Paper)
-        },
-        "C" | "Z" => {
-            Ok(RPS::Scissors)
-        },
-        _ => {
-            Err(anyhow!("Unknown value {input}"))
-        }
+        "A" | "X" => Ok(RPS::Rock),
+        "B" | "Y" => Ok(RPS::Paper),
+        "C" | "Z" => Ok(RPS::Scissors),
+        _ => Err(anyhow!("Unknown value {input}")),
     }
 }
 
-
-
 pub fn get_your_result(you: RPS, them: RPS) -> RPSResult {
     match (you, them) {
-        (RPS::Rock, RPS::Scissors) | (RPS::Paper, RPS::Rock) | (RPS::Scissors, RPS::Paper) => { RPSResult::Win },
-        (RPS::Rock, RPS::Rock) | (RPS::Paper, RPS::Paper) | (RPS::Scissors, RPS::Scissors) => { RPSResult::Draw },
-        (RPS::Rock, RPS::Paper) | (RPS::Paper, RPS::Scissors) | (RPS::Scissors, RPS::Rock) => { RPSResult::Lose }
+        (RPS::Rock, RPS::Scissors) | (RPS::Paper, RPS::Rock) | (RPS::Scissors, RPS::Paper) => {
+            RPSResult::Win
+        }
+        (RPS::Rock, RPS::Rock) | (RPS::Paper, RPS::Paper) | (RPS::Scissors, RPS::Scissors) => {
+            RPSResult::Draw
+        }
+        (RPS::Rock, RPS::Paper) | (RPS::Paper, RPS::Scissors) | (RPS::Scissors, RPS::Rock) => {
+            RPSResult::Lose
+        }
     }
 }
 
 pub fn get_your_required_move(expected_result: RPSResult, them: RPS) -> RPS {
     match (expected_result, them) {
-        (RPSResult::Win, RPS::Scissors) | (RPSResult::Draw, RPS::Rock) | (RPSResult::Lose, RPS::Paper) => { RPS::Rock },
-        (RPSResult::Win, RPS::Rock) | (RPSResult::Draw, RPS::Paper) | (RPSResult::Lose, RPS::Scissors) => { RPS::Paper },
-        (RPSResult::Win, RPS::Paper) | (RPSResult::Draw, RPS::Scissors) | (RPSResult::Lose, RPS::Rock) => { RPS::Scissors }
+        (RPSResult::Win, RPS::Scissors)
+        | (RPSResult::Draw, RPS::Rock)
+        | (RPSResult::Lose, RPS::Paper) => RPS::Rock,
+        (RPSResult::Win, RPS::Rock)
+        | (RPSResult::Draw, RPS::Paper)
+        | (RPSResult::Lose, RPS::Scissors) => RPS::Paper,
+        (RPSResult::Win, RPS::Paper)
+        | (RPSResult::Draw, RPS::Scissors)
+        | (RPSResult::Lose, RPS::Rock) => RPS::Scissors,
     }
 }
 
@@ -97,12 +92,7 @@ impl SolutionLinear<Vec<(RPS, RPS)>, i32, i32> for Day2Solution {
         let mut moves: Vec<(RPS, RPS)> = Vec::new();
         for line in input.lines() {
             let items = line.split(" ").collect_vec();
-            moves.push(
-                (
-                    str_to_rps(items[0]).unwrap(), 
-                    str_to_rps(items[1]).unwrap()
-                )
-            );
+            moves.push((str_to_rps(items[0]).unwrap(), str_to_rps(items[1]).unwrap()));
         }
         Ok(moves)
     }
@@ -115,16 +105,17 @@ impl SolutionLinear<Vec<(RPS, RPS)>, i32, i32> for Day2Solution {
         // });
 
         // let mut total = 0;
-        // 
+        //
         // for turn in input {
         //     let (them, you) = turn;
         //     total += you.score();
         //     total += get_your_result(*you, *them).score();
         // }
 
-        let total = input.iter().map(|(them, you)| {
-            you.score() + get_your_result(*you, *them).score()
-        }).sum::<i32>();
+        let total = input
+            .iter()
+            .map(|(them, you)| you.score() + get_your_result(*you, *them).score())
+            .sum::<i32>();
 
         Ok(total)
     }
@@ -141,11 +132,14 @@ impl SolutionLinear<Vec<(RPS, RPS)>, i32, i32> for Day2Solution {
         //     total += result.score();
         // }
 
-        let total = input.iter().map(|(them, unconverted_result)| {
-            let result = unconverted_result.to_rps_result();
-            let your_move = get_your_required_move(result, *them);
-            your_move.score() + result.score()
-        }).sum::<i32>();
+        let total = input
+            .iter()
+            .map(|(them, unconverted_result)| {
+                let result = unconverted_result.to_rps_result();
+                let your_move = get_your_required_move(result, *them);
+                your_move.score() + result.score()
+            })
+            .sum::<i32>();
 
         Ok(total)
     }

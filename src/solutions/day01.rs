@@ -31,20 +31,28 @@ impl SolutionLinear<Vec<Vec<i32>>, String, String> for Day1Solution {
         if inventory.len() != 0 {
             inventories.push(inventory);
         }
-        
+
         return Ok(inventories);
     }
 
     fn part1(_input: &mut Vec<Vec<i32>>) -> Result<String> {
-        Ok(
-            _input.iter().map(|x| x.iter().sum::<i32>()).max().unwrap().to_string()
-        )
+        Ok(_input
+            .iter()
+            .map(|x| x.iter().sum::<i32>())
+            .max()
+            .unwrap()
+            .to_string())
     }
 
     fn part2(_input: &mut Vec<Vec<i32>>, _part_1_solution: String) -> Result<String> {
-        Ok(
-            _input.iter().map(|x| x.iter().sum::<i32>()).sorted().rev().take(3).sum::<i32>().to_string()
-        )
+        Ok(_input
+            .iter()
+            .map(|x| x.iter().sum::<i32>())
+            .sorted()
+            .rev()
+            .take(3)
+            .sum::<i32>()
+            .to_string())
     }
 }
 
