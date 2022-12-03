@@ -33,14 +33,11 @@ impl SolutionLinear<Vec<(Vec<char>, Vec<char>)>, i32, i32> for Day3Solution {
     fn part1(input: &mut Vec<(Vec<char>, Vec<char>)>) -> Result<i32> {
         let mut total = 0;
         for (bag_a, bag_b) in input {
-            // println!("{bag_a:?} {bag_b:?}");
             let bag_a_hash: HashSet<char> = bag_a.iter().copied().collect();
             let bag_b_hash: HashSet<char> = bag_b.iter().copied().collect();
             let common: Vec<char> = bag_a_hash.intersection(&bag_b_hash).copied().collect();
-            // println!("{common:?}");
             for item in common {
                 let val = item_to_priority(item).unwrap();
-                // println!("{item} {val}");
                 total += val;
             }
         }
@@ -94,9 +91,13 @@ mod tests {
     use rstest::rstest;
 
     #[rstest]
-    #[case("[1,2,3]", 6, 18)]
-    #[case("[0,7,13,20,1,100]", 141, 846)]
-    #[case("[6000]", 6000, 6000)]
+    #[case("vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw
+", 157, 70)]
     fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: i32) {
         let mut input = Day3Solution::load(input).unwrap();
         let p1 = Day3Solution::part1(&mut input).unwrap();

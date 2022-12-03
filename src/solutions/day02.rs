@@ -152,15 +152,16 @@ mod tests {
     use rstest::rstest;
 
     #[rstest]
-    #[case("[1,2,3]", 6, 18)]
-    #[case("[0,7,13,20,1,100]", 141, 846)]
-    #[case("[6000]", 6000, 6000)]
-    fn validate_linear(#[case] input: &str, #[case] expected_1: usize, #[case] expected_2: usize) {
-        // let mut input = Day2Solution::load(input).unwrap();
-        // let p1 = Day2Solution::part1(&mut input).unwrap();
-        // let p2 = Day2Solution::part2(&mut input, p1).unwrap();
+    #[case("A Y
+B X
+C Z
+", 15, 12)]
+    fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: i32) {
+        let mut input = Day2Solution::load(input).unwrap();
+        let p1 = Day2Solution::part1(&mut input).unwrap();
+        let p2 = Day2Solution::part2(&mut input, p1).unwrap();
 
-        // assert_eq!(expected_1, p1);
-        // assert_eq!(expected_2, p2);
+        assert_eq!(expected_1, p1);
+        assert_eq!(expected_2, p2);
     }
 }
