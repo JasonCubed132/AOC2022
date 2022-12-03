@@ -44,7 +44,7 @@ impl SolutionLinear<Vec<(Vec<char>, Vec<char>)>, i32, i32> for Day3Solution {
         Ok(total)
     }
 
-    fn part2(input: &mut Vec<(Vec<char>, Vec<char>)>, part_1_solution: i32) -> Result<i32> {
+    fn part2(input: &mut Vec<(Vec<char>, Vec<char>)>, _part_1_solution: i32) -> Result<i32> {
         // Re-unify parts of bags as they don't need to be separate here.
         let processed_input: Vec<HashSet<char>> = input
             .iter()

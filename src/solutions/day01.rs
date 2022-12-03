@@ -1,5 +1,5 @@
 use crate::utils::solver_types::{solve_linear, SolutionLinear};
-use anyhow::{anyhow, Result};
+use anyhow::{Result};
 use itertools::Itertools;
 
 /// Not yet implementd

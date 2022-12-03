@@ -120,7 +120,7 @@ impl SolutionLinear<Vec<(RPS, RPS)>, i32, i32> for Day2Solution {
         Ok(total)
     }
 
-    fn part2(input: &mut Vec<(RPS, RPS)>, part_1_solution: i32) -> Result<i32> {
+    fn part2(input: &mut Vec<(RPS, RPS)>, _part_1_solution: i32) -> Result<i32> {
         // let mut total = 0;
 
         // for turn in input {
