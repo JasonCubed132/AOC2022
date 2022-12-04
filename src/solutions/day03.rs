@@ -91,13 +91,17 @@ mod tests {
     use rstest::rstest;
 
     #[rstest]
-    #[case("vJrwpWtwJgWrhcsFMMfFFhFp
+    #[case(
+        "vJrwpWtwJgWrhcsFMMfFFhFp
 jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
 PmmdzqPrVvPwwTWBwg
 wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
 ttgJtRGJQctTZtZT
 CrZsJsPPZsGzwwsLwLmpwMDw
-", 157, 70)]
+",
+        157,
+        70
+    )]
     fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: i32) {
         let mut input = Day3Solution::load(input).unwrap();
         let p1 = Day3Solution::part1(&mut input).unwrap();

@@ -1,5 +1,5 @@
 use crate::utils::solver_types::{solve_linear, SolutionLinear};
-use anyhow::{Result};
+use anyhow::Result;
 use itertools::Itertools;
 
 /// Not yet implementd
@@ -36,12 +36,7 @@ impl SolutionLinear<Vec<Vec<i32>>, i32, i32> for Day1Solution {
     }
 
     fn part1(_input: &mut Vec<Vec<i32>>) -> Result<i32> {
-        Ok(_input
-            .iter()
-            .map(|x| x.iter().sum::<i32>())
-            .max()
-            .unwrap()
-        )
+        Ok(_input.iter().map(|x| x.iter().sum::<i32>()).max().unwrap())
     }
 
     fn part2(_input: &mut Vec<Vec<i32>>, _part_1_solution: i32) -> Result<i32> {
@@ -51,8 +46,7 @@ impl SolutionLinear<Vec<Vec<i32>>, i32, i32> for Day1Solution {
             .sorted()
             .rev()
             .take(3)
-            .sum::<i32>()
-        )
+            .sum::<i32>())
     }
 }
 
@@ -63,7 +57,8 @@ mod tests {
     use rstest::rstest;
 
     #[rstest]
-    #[case("1000
+    #[case(
+        "1000
 2000
 3000
 
@@ -77,7 +72,10 @@ mod tests {
 9000
 
 10000
-", 24000, 45000)]
+",
+        24000,
+        45000
+    )]
     fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: i32) {
         let mut input = Day1Solution::load(input).unwrap();
         let p1 = Day1Solution::part1(&mut input).unwrap();

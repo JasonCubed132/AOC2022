@@ -152,10 +152,14 @@ mod tests {
     use rstest::rstest;
 
     #[rstest]
-    #[case("A Y
+    #[case(
+        "A Y
 B X
 C Z
-", 15, 12)]
+",
+        15,
+        12
+    )]
     fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: i32) {
         let mut input = Day2Solution::load(input).unwrap();
         let p1 = Day2Solution::part1(&mut input).unwrap();
