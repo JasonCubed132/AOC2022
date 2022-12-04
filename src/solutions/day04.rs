@@ -50,7 +50,7 @@ impl SolutionLinear<Vec<(Range, Range)>, i32, i32> for Day4Solution {
                 .collect_vec();
 
             if raw_pairs.len() != 2 {
-                panic!("Got other than 2 ranges");
+                return Err(anyhow!("Got other than 2 ranges"));
             }
 
             range_pairs.push((raw_pairs[0], raw_pairs[1]));
