@@ -33,7 +33,7 @@ impl SolutionLinear<Vec<(Range, Range)>, i32, i32> for Day4Solution {
     fn load(input: &str) -> Result<Vec<(Range, Range)>> {
         let mut range_pairs: Vec<(Range, Range)> = Vec::new();
         for line in input.lines() {
-            let raw_pairs = line
+            let raw_pairs: Vec<Range> = line
                 .split(",")
                 .map(|x| {
                     let parsed = x
@@ -63,12 +63,8 @@ impl SolutionLinear<Vec<(Range, Range)>, i32, i32> for Day4Solution {
         let mut count = 0;
 
         for (range_1, range_2) in input {
-            if range_1.test_contains_range(*range_2) {
+            if range_1.test_contains_range(*range_2) || range_2.test_contains_range(*range_1) {
                 count += 1;
-                continue;
-            } else if range_2.test_contains_range(*range_1) {
-                count += 1;
-                continue;
             }
         }
 
@@ -79,12 +75,8 @@ impl SolutionLinear<Vec<(Range, Range)>, i32, i32> for Day4Solution {
         let mut count = 0;
 
         for (range_1, range_2) in input {
-            if range_1.test_overlaps_range(*range_2) {
+            if range_1.test_overlaps_range(*range_2) || range_2.test_overlaps_range(*range_1) {
                 count += 1;
-                continue;
-            } else if range_2.test_overlaps_range(*range_1) {
-                count += 1;
-                continue;
             }
         }
 
