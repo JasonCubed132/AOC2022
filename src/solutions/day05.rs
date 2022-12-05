@@ -15,15 +15,29 @@ impl SolutionLinear<(Vec<Vec<char>>, Vec<(i32, i32, i32)>), String, String> for 
         let parts = lines.split(|x| x.to_string().eq("")).collect_vec();
         println!("{parts:?}");
 
-        let stack_regex = Regex::new(r"^(?:\[([A-Z])\]| ( ) )(?: (?:\[([A-Z])\]| ( ) ))*$").unwrap();
+        // let stack_regex = Regex::new(r"^(?:\[([A-Z])\]| ( ) )(?: (?:\[([A-Z])\]| ( ) ))*$").unwrap();
 
+        // for line in parts[0] {
+        //     println!("{line:?}");
+        //     let result = stack_regex.captures_iter(line);
+        //     for item in result {
+        //         println!("{item:?}");
+        //     }
+        // }
+
+        let mut stacks: Vec<Vec<char>> = Vec::new();
         for line in parts[0] {
-            println!("{line:?}");
-            let result = stack_regex.captures_iter(line);
-            for item in result {
-                println!("{item:?}");
+            let stack_chars = (**line).chars().collect_vec();
+            let items = stack_chars.chunks(4).collect_vec();
+            let mut stack: Vec<char> = Vec::new();
+
+            for item in items {
+                stack.push(item[1]);
             }
+
+            stacks.push(stack);
         }
+        println!("{stacks:?}");
         todo!()
     }
 
