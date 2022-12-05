@@ -26,6 +26,8 @@ impl Range {
     pub fn test_overlaps_range(self, other: Range) -> bool {
         (self.lower >= other.lower && self.lower <= other.upper)
             || (self.upper >= other.lower && self.upper <= other.upper)
+            || (other.lower >= self.lower && other.lower <= self.upper)
+            || (other.upper >= self.lower && other.upper <= self.upper)
     }
 }
 
@@ -75,7 +77,7 @@ impl SolutionLinear<Vec<(Range, Range)>, i32, i32> for Day4Solution {
         let mut count = 0;
 
         for (range_1, range_2) in input {
-            if range_1.test_overlaps_range(*range_2) || range_2.test_overlaps_range(*range_1) {
+            if range_1.test_overlaps_range(*range_2) {
                 count += 1;
             }
         }
