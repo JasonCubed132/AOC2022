@@ -13,3 +13,4 @@ itertools = "0.10.5"
 
 [dev-dependencies]
 rstest = "0.15.0"
+regex = "1"
