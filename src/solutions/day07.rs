@@ -9,7 +9,7 @@ pub fn day07(input: &str) -> Result<f32> {
     solve_linear::<Day7Solution, _, _, _>(input)
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 enum Node {
     File { str: String, size: i32 },
     Dir { str: String, items: Vec<Node> }
@@ -45,10 +45,10 @@ impl SolutionLinear<Node, i32, i32> for Day7Solution {
                                     current_path.pop();
                                 }
                                 folder_name => {
-                                    let node = current_path[current_path.len() - 1];
+                                    let mut node = current_path[current_path.len() - 1];
                                     match node {
                                         Node::File { .. } => { return Err(anyhow!("Tried to cd from file!")) }
-                                        Node::Dir { str: parent_str,  items } => {
+                                        Node::Dir { str: _,  items } => {
                                             let mut folder_found = false;
 
                                             for item in items {
@@ -65,11 +65,7 @@ impl SolutionLinear<Node, i32, i32> for Day7Solution {
 
                                             if !folder_found {
                                                 let folder_node = Node::Dir { str: folder_name.to_string(), items: Vec::new() };
-                                                let new_items = items.iter().copied().collect_vec();
-                                                new_items.push(folder_node);
-                                                let new_parent = Node::Dir { str: parent_str.to_string(), items: new_items };
-                                                current_path.pop();
-                                                current_path.push(&new_parent);
+                                                items.push(folder_node);
                                             }
                                         }
                                     }
@@ -87,15 +83,11 @@ impl SolutionLinear<Node, i32, i32> for Day7Solution {
                     if expecting_files {
                         let name = parts[1].to_string();
                         let new_node = Node::Dir { str: name, items: Vec::new() };
-                        let curr_node = current_path[current_path.size() - 1];
+                        let mut curr_node = current_path[current_path.len() - 1];
                         match curr_node {
                             Node::File { .. } => { return Err(anyhow!("At a file for some reason")) },
                             Node::Dir { str: name, items: items } => {
-                                let new_items = items.iter().copied().collect_vec();
-                                new_items.push(new_node);
-                                let new_parent = Node::Dir { str: name, items: new_items };
-                                current_path.pop();
-                                current_path.push(&new_parent);
+                                items.push(new_node);
                             }
                         }
                     } else {
@@ -107,15 +99,11 @@ impl SolutionLinear<Node, i32, i32> for Day7Solution {
                         let num_size = size.parse::<i32>().unwrap();
                         let name = parts[1].to_string();
                         let new_node = Node::File{ str: name, size: num_size };
-                        let curr_node = current_path[current_path.size() - 1];
+                        let mut curr_node = current_path[current_path.len() - 1];
                         match curr_node {
                             Node::File { .. } => { return Err(anyhow!("At a file for some reason")) },
                             Node::Dir { str: name, items: items } => {
-                                let new_items = items.iter().copied().collect_vec();
-                                new_items.push(new_node);
-                                let new_parent = Node::Dir { str: name, items: new_items };
-                                current_path.pop();
-                                current_path.push(&new_parent);
+                                items.push(new_node);
                             }
                         }
                     } else {
@@ -128,7 +116,7 @@ impl SolutionLinear<Node, i32, i32> for Day7Solution {
     }
 
     fn part1(input: &mut Node) -> Result<i32> {
-        println!("{input}");
+        println!("{input:?}");
         todo!()
     }
 
