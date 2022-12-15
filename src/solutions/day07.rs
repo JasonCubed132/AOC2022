@@ -2,6 +2,8 @@
 use crate::utils::solver_types::{solve_linear, SolutionLinear};
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 pub struct Day7Solution {}
 
@@ -10,26 +12,52 @@ pub fn day07(input: &str) -> Result<f32> {
 }
 
 #[derive(Clone, Debug)]
-enum Node {
-    File { str: String, size: i32 },
-    Dir { str: String, items: Vec<Node> }
+struct Item {
+    name: String,
+    size: i32,
+    items: HashSet<String>
 }
 
-impl SolutionLinear<Node, i32, i32> for Day7Solution {
-    fn load(input: &str) -> Result<Node> {
+fn backfill_sizes(mut structure: HashMap<String, Item>, curr_path: String) {
+    let mut path: Vec<String> = Vec::new();
+    path.push(curr_path);
+    let mut size = 0;
+
+    let mut node: &mut Item  = structure.get_mut(path.join("/").as_str()).unwrap();
+
+    for item in node.items {
+        path.push(item.to_string());
+        backfill_sizes(structure, path.join("/"));
+
+        size += structure.get(path.join("/").as_str()).unwrap().size;
+        path.pop();
+    }
+
+    node.size = size;
+}
+
+impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
+    fn load(input: &str) -> Result<HashMap<String, Item>> {
         let mut lines = input.lines().collect_vec(); 
         if lines.remove(0) != "$ cd /" {
             return Err(anyhow!("Expected cd into root at line 0"));
         }
 
-        let mut head = Node::Dir { str:"".to_string(), items: [].to_vec() };
-        let mut current_path: Vec<&Node> = Vec::new();
-        current_path.push(&head);
+        let mut path: Vec<String> = Vec::new();
+        let mut str_path = path.join("/").to_string();
+
+        let head = Item { name: str_path.clone(), size: 0, items: HashSet::new() };
+
+        let mut structure: HashMap<String, Item> = HashMap::new();
+        structure.insert(str_path.clone(), head);
+        
+        
 
         let mut expecting_files = false;
 
         for line in lines {
             let parts = line.split(" ").collect_vec();
+            str_path = path.join("/").to_string();
             match parts[0] {
                 "$" => {
                     expecting_files = false;
@@ -37,39 +65,30 @@ impl SolutionLinear<Node, i32, i32> for Day7Solution {
                         "cd" => {
                             match parts[2] {
                                 "/" => {
-                                    while current_path.len() > 1 {
-                                        current_path.pop();
-                                    }
+                                    println!("Cd root");
+                                    path.clear();
                                 }
                                 ".." => {
-                                    current_path.pop();
+                                    println!("Cd up");
+                                    path.pop();
                                 }
                                 folder_name => {
-                                    let mut node = current_path[current_path.len() - 1];
-                                    match node {
-                                        Node::File { .. } => { return Err(anyhow!("Tried to cd from file!")) }
-                                        Node::Dir { str: _,  items } => {
-                                            let mut folder_found = false;
-
-                                            for item in items {
-                                                match item {
-                                                    Node::File { .. } => { return Err(anyhow!("Tried to cd to a file!")) }
-                                                    Node::Dir { str: to_str, items: _ } => {
-                                                        if folder_name == to_str {
-                                                            current_path.push(item);
-                                                            folder_found = true;
-                                                        }
-                                                    }
-                                                }
-                                            }
-
-                                            if !folder_found {
-                                                let folder_node = Node::Dir { str: folder_name.to_string(), items: Vec::new() };
-                                                items.push(folder_node);
-                                            }
+                                    let curr_folder = structure.get_mut(str_path.as_str());
+                                    let not_found;
+                                    match curr_folder {
+                                        Some(item) => {
+                                            not_found = item.items.insert(folder_name.to_string());
                                         }
+                                        None => { panic!() }
                                     }
-                                    
+                                    path.push(folder_name.to_string());
+
+                                    if not_found {
+                                        let folder = Item { name: folder_name.to_string(), size: 0, items: HashSet::new() };
+                                        structure.insert(path.join("/").to_string(), folder);
+                                    }
+
+                                    println!("cd into {folder_name} from {str_path}");
                                 }
                             }
                         },
@@ -82,14 +101,25 @@ impl SolutionLinear<Node, i32, i32> for Day7Solution {
                 "dir" => {
                     if expecting_files {
                         let name = parts[1].to_string();
-                        let new_node = Node::Dir { str: name, items: Vec::new() };
-                        let mut curr_node = current_path[current_path.len() - 1];
-                        match curr_node {
-                            Node::File { .. } => { return Err(anyhow!("At a file for some reason")) },
-                            Node::Dir { str: name, items: items } => {
-                                items.push(new_node);
+
+                        let curr_folder = structure.get_mut(str_path.as_str());
+                        let not_found;
+                        match curr_folder {
+                            Some(item) => {
+                                not_found = item.items.insert(name.clone());
                             }
+                            None => { panic!() }
                         }
+
+                        if not_found {
+                            path.push(name.to_string());
+                            let folder = Item { name: name.clone(), size: 0, items: HashSet::new() };
+
+                            structure.insert(path.join("/"), folder);
+                            path.pop();
+                        }
+
+                        println!("Create dir {name} at {str_path}");
                     } else {
                         return Err(anyhow!("Unknown symbol"))
                     }
@@ -98,29 +128,43 @@ impl SolutionLinear<Node, i32, i32> for Day7Solution {
                     if expecting_files {
                         let num_size = size.parse::<i32>().unwrap();
                         let name = parts[1].to_string();
-                        let new_node = Node::File{ str: name, size: num_size };
-                        let mut curr_node = current_path[current_path.len() - 1];
-                        match curr_node {
-                            Node::File { .. } => { return Err(anyhow!("At a file for some reason")) },
-                            Node::Dir { str: name, items: items } => {
-                                items.push(new_node);
+
+                        let curr_folder = structure.get_mut(str_path.as_str());
+                        let not_found;
+                        match curr_folder {
+                            Some(item) => {
+                                not_found = item.items.insert(name.clone());
                             }
+                            None => { panic!() }
                         }
+
+                        if not_found {
+                            path.push(name.to_string());
+                            let file = Item { name: name.clone(), size: num_size, items: HashSet::new() };
+
+                            structure.insert(path.join("/"), file);
+                            path.pop();
+                        }
+
+                        println!("Create file {name} size {num_size} at {str_path}");
                     } else {
                         return Err(anyhow!("Unknown symbol"))
                     }
                 }
             }
         }
-        Ok(head)
+
+        backfill_sizes(structure, "".to_string());
+
+        Ok(structure)
     }
 
-    fn part1(input: &mut Node) -> Result<i32> {
+    fn part1(input: &mut HashMap<String, Item>) -> Result<i32> {
         println!("{input:?}");
         todo!()
     }
 
-    fn part2(input: &mut Node, part_1_solution: i32) -> Result<i32> {
+    fn part2(input: &mut HashMap<String, Item>, part_1_solution: i32) -> Result<i32> {
         todo!()
     }
 }
