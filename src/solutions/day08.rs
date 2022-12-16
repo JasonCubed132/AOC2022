@@ -114,13 +114,63 @@ impl SolutionLinear<Vec<Vec<i32>>, i32, i32> for Day8Solution {
             .iter()
             .map(|x| x.iter().sum::<i32>())
             .sum::<i32>();
-
-        println!("P1 result {result}");
         Ok(result)
     }
 
     fn part2(input: &mut Vec<Vec<i32>>, _part_1_solution: i32) -> Result<i32> {
-        todo!()
+        let height = input.len();
+        let width = input[0].len();
+
+        let mut max_result = 0;
+
+        for i in 0..height {
+            for j in 0..width {
+                let test_num = input[i][j];
+
+                let mut down_count = 0;
+                for k in (i + 1)..height {
+                    down_count += 1;
+                    if input[k][j] < test_num {
+                    } else {
+                        break;
+                    }
+                }
+
+                let mut up_count = 0;
+                for k in 0..i {
+                    up_count += 1;
+                    if input[i - k - 1][j] < test_num {
+                    } else {
+                        break;
+                    }
+                }
+
+                let mut right_count = 0;
+                for k in (j + 1)..width {
+                    right_count += 1;
+                    if input[i][k] < test_num {
+                    } else {
+                        break;
+                    }
+                }
+
+                let mut left_count = 0;
+                for k in 0..j {
+                    left_count += 1;
+                    if input[i][j - k - 1] < test_num {
+                    } else {
+                        break;
+                    }
+                }
+
+                let result = up_count * down_count * left_count * right_count;
+
+                if result > max_result {
+                    max_result = result;
+                }
+            }
+        }
+        Ok(max_result)
     }
 }
 
@@ -138,7 +188,7 @@ mod tests {
 33549
 35390",
         21,
-        0
+        8
     )]
     fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: i32) {
         let mut input = Day8Solution::load(input).unwrap();
