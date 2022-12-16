@@ -59,6 +59,7 @@ fn simulate(input: Vec<Direction>, rope_length: usize) -> i32 {
                             }
                         }
                     }
+                    
                     set.insert(rope[rope.len() - 1].clone());
                 }
             },
@@ -78,7 +79,6 @@ fn simulate(input: Vec<Direction>, rope_length: usize) -> i32 {
                         }
                     }
 
-                    // println!("{rope[i-1]:?} {rope[i]:?}");
                     set.insert(rope[rope.len() - 1].clone());
                 }
             },
@@ -98,7 +98,6 @@ fn simulate(input: Vec<Direction>, rope_length: usize) -> i32 {
                         } 
                     }
 
-                    // println!("{rope[i-1]:?} {rope[i]:?}");
                     set.insert(rope[rope.len() - 1].clone());
                 }
             },
