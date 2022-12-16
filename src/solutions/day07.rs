@@ -1,4 +1,3 @@
-
 use crate::utils::solver_types::{solve_linear, SolutionLinear};
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
@@ -15,7 +14,7 @@ pub fn day07(input: &str) -> Result<f32> {
 struct Item {
     size: i32,
     items: HashSet<String>,
-    is_file: bool
+    is_file: bool,
 }
 
 fn backfill_sizes(structure: &mut HashMap<String, Item>, curr_path: Option<String>) {
@@ -38,7 +37,7 @@ fn backfill_sizes(structure: &mut HashMap<String, Item>, curr_path: Option<Strin
         if !test_item.expect(test_path.as_str()).is_file {
             backfill_sizes(structure, Some(test_path.clone()));
         }
-        
+
         size += structure.get(test_path.as_str()).unwrap().size;
         path.pop();
     }
@@ -47,7 +46,11 @@ fn backfill_sizes(structure: &mut HashMap<String, Item>, curr_path: Option<Strin
     structure.get_mut(str_path.as_str()).unwrap().size = size;
 }
 
-fn count_sizes_that_are_at_most(structure: &mut HashMap<String, Item>, upper_limit: i32, curr_path: Option<String>) -> i32 {
+fn count_sizes_that_are_at_most(
+    structure: &mut HashMap<String, Item>,
+    upper_limit: i32,
+    curr_path: Option<String>,
+) -> i32 {
     let mut path: Vec<String> = Vec::new();
     match curr_path {
         Some(str) => path.push(str),
@@ -61,7 +64,7 @@ fn count_sizes_that_are_at_most(structure: &mut HashMap<String, Item>, upper_lim
 
     let curr_size = curr_item.expect(str_path.as_str()).size;
     // println!("Testing item {str_path} with size {curr_size}");
-    if  curr_size <= upper_limit {
+    if curr_size <= upper_limit {
         size += curr_size;
     }
 
@@ -80,7 +83,7 @@ fn count_sizes_that_are_at_most(structure: &mut HashMap<String, Item>, upper_lim
 
 impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
     fn load(input: &str) -> Result<HashMap<String, Item>> {
-        let mut lines = input.lines().collect_vec(); 
+        let mut lines = input.lines().collect_vec();
         if lines.remove(0) != "$ cd /" {
             return Err(anyhow!("Expected cd into root at line 0"));
         }
@@ -88,12 +91,14 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
         let mut path: Vec<String> = Vec::new();
         let mut str_path = path.join("/").to_string();
 
-        let head = Item { size: 0, items: HashSet::new(), is_file: false };
+        let head = Item {
+            size: 0,
+            items: HashSet::new(),
+            is_file: false,
+        };
 
         let mut structure: HashMap<String, Item> = HashMap::new();
         structure.insert(str_path.clone(), head);
-        
-        
 
         let mut expecting_files = false;
 
@@ -121,23 +126,29 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
                                         Some(item) => {
                                             not_found = item.items.insert(folder_name.to_string());
                                         }
-                                        None => { panic!() }
+                                        None => {
+                                            panic!()
+                                        }
                                     }
                                     path.push(folder_name.to_string());
 
                                     if not_found {
-                                        let folder = Item { size: 0, items: HashSet::new(), is_file: false };
+                                        let folder = Item {
+                                            size: 0,
+                                            items: HashSet::new(),
+                                            is_file: false,
+                                        };
                                         structure.insert(path.join("/").to_string(), folder);
                                     }
 
                                     // println!("cd into {folder_name} from {str_path}");
                                 }
                             }
-                        },
+                        }
                         "ls" => {
                             expecting_files = true;
                         }
-                        _ => { return Err(anyhow!("Unknown symbol")) }
+                        _ => return Err(anyhow!("Unknown symbol")),
                     }
                 }
                 "dir" => {
@@ -150,12 +161,18 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
                             Some(item) => {
                                 not_found = item.items.insert(name.clone());
                             }
-                            None => { panic!() }
+                            None => {
+                                panic!()
+                            }
                         }
 
                         if not_found {
                             path.push(name.to_string());
-                            let folder = Item { size: 0, items: HashSet::new(), is_file: false };
+                            let folder = Item {
+                                size: 0,
+                                items: HashSet::new(),
+                                is_file: false,
+                            };
 
                             structure.insert(path.join("/"), folder);
                             path.pop();
@@ -163,7 +180,7 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
 
                         // println!("Create dir {name} at {str_path}");
                     } else {
-                        return Err(anyhow!("Unknown symbol"))
+                        return Err(anyhow!("Unknown symbol"));
                     }
                 }
                 size => {
@@ -177,12 +194,18 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
                             Some(item) => {
                                 not_found = item.items.insert(name.clone());
                             }
-                            None => { panic!() }
+                            None => {
+                                panic!()
+                            }
                         }
 
                         if not_found {
                             path.push(name.to_string());
-                            let file = Item { size: num_size, items: HashSet::new(), is_file: true };
+                            let file = Item {
+                                size: num_size,
+                                items: HashSet::new(),
+                                is_file: true,
+                            };
 
                             structure.insert(path.join("/"), file);
                             path.pop();
@@ -190,7 +213,7 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
 
                         // println!("Create file {name} size {num_size} at {str_path}");
                     } else {
-                        return Err(anyhow!("Unknown symbol"))
+                        return Err(anyhow!("Unknown symbol"));
                     }
                 }
             }
@@ -214,11 +237,19 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
         let target_size = 30000000;
         let need_size = target_size - (total_size - root_size);
 
-        let mut sizes = input.values().filter(|item| !item.is_file).map(|item| item.size).collect_vec();
+        let mut sizes = input
+            .values()
+            .filter(|item| !item.is_file)
+            .map(|item| item.size)
+            .collect_vec();
         sizes.sort();
         // println!("{sizes:?}");
-        
-        let new_sizes = sizes.iter().filter(|x| **x >= need_size).map(|x| *x).collect_vec();
+
+        let new_sizes = sizes
+            .iter()
+            .filter(|x| **x >= need_size)
+            .map(|x| *x)
+            .collect_vec();
         let result = new_sizes[0];
         // println!("P2 result {result}");
         Ok(result)
@@ -232,7 +263,8 @@ mod tests {
     use rstest::rstest;
 
     #[rstest]
-    #[case("$ cd /
+    #[case(
+        "$ cd /
 $ ls
 dir a
 14848514 b.txt
@@ -254,7 +286,10 @@ $ ls
 4060174 j
 8033020 d.log
 5626152 d.ext
-7214296 k", 95437, 24933642)]
+7214296 k",
+        95437,
+        24933642
+    )]
     fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: i32) {
         let mut input = Day7Solution::load(input).unwrap();
         let p1 = Day7Solution::part1(&mut input).unwrap();

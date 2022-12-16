@@ -1,4 +1,3 @@
-
 use std::collections::HashSet;
 
 use crate::utils::solver_types::{solve_linear, SolutionLinear};
@@ -13,10 +12,13 @@ pub fn day06(input: &str) -> Result<f32> {
 
 fn generic_solution(input: &mut Vec<char>, len_of_set: usize) -> Result<i32> {
     for index in 0..(input.len() - len_of_set) {
-        let set: HashSet<char> = input[index..index+len_of_set].into_iter().copied().collect();
+        let set: HashSet<char> = input[index..index + len_of_set]
+            .into_iter()
+            .copied()
+            .collect();
         if set.len() == len_of_set {
             let result: i32 = (index + len_of_set).try_into().unwrap();
-            return Ok(result)
+            return Ok(result);
         }
     }
 

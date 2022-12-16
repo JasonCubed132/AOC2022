@@ -1,7 +1,7 @@
 use std::vec;
 
 use crate::utils::solver_types::{solve_linear, SolutionLinear};
-use anyhow::{Result};
+use anyhow::Result;
 use itertools::Itertools;
 use regex::Regex;
 use transpose::transpose;
