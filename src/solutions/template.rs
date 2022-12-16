@@ -32,9 +32,9 @@ mod tests {
     #[rstest]
     #[case("", 0, 0)]
     fn validate_linear(#[case] input: &str, #[case] expected_1: _, #[case] expected_2: _) {
-        let mut input = Day2Solution::load(input).unwrap();
-        let p1 = Day2Solution::part1(&mut input).unwrap();
-        let p2 = Day2Solution::part2(&mut input, p1).unwrap();
+        let mut input = TemplateSolution::load(input).unwrap();
+        let p1 = TemplateSolution::part1(&mut input).unwrap();
+        let p2 = TemplateSolution::part2(&mut input, p1).unwrap();
 
         assert_eq!(expected_1, p1);
         assert_eq!(expected_2, p2);
