@@ -13,9 +13,9 @@ pub fn day07(input: &str) -> Result<f32> {
 
 #[derive(Clone, Debug)]
 struct Item {
-    name: String,
     size: i32,
-    items: HashSet<String>
+    items: HashSet<String>,
+    is_file: bool
 }
 
 fn backfill_sizes(structure: &mut HashMap<String, Item>, curr_path: Option<String>) {
@@ -35,7 +35,7 @@ fn backfill_sizes(structure: &mut HashMap<String, Item>, curr_path: Option<Strin
 
         let test_path = path.join("/");
         let test_item = structure.get(test_path.as_str()).cloned();
-        if test_item.expect(test_path.as_str()).size == 0 {
+        if !test_item.expect(test_path.as_str()).is_file {
             backfill_sizes(structure, Some(test_path.clone()));
         }
         
@@ -43,8 +43,39 @@ fn backfill_sizes(structure: &mut HashMap<String, Item>, curr_path: Option<Strin
         path.pop();
     }
 
-    println!("Size {size} at path {str_path}");
+    // println!("Size {size} at path {str_path}");
     structure.get_mut(str_path.as_str()).unwrap().size = size;
+}
+
+fn count_sizes_that_are_at_most(structure: &mut HashMap<String, Item>, upper_limit: i32, curr_path: Option<String>) -> i32 {
+    let mut path: Vec<String> = Vec::new();
+    match curr_path {
+        Some(str) => path.push(str),
+        None => {}
+    }
+    let mut size = 0;
+
+    let str_path = path.join("/");
+    let curr_item = structure.get(str_path.as_str()).cloned();
+    let items = curr_item.clone().expect(str_path.as_str()).items;
+
+    let curr_size = curr_item.expect(str_path.as_str()).size;
+    // println!("Testing item {str_path} with size {curr_size}");
+    if  curr_size <= upper_limit {
+        size += curr_size;
+    }
+
+    for item in items {
+        path.push(item.to_string());
+
+        let test_path = path.join("/");
+        let test_item = structure.get(test_path.as_str()).cloned();
+        if !test_item.clone().expect(test_path.as_str()).is_file {
+            size += count_sizes_that_are_at_most(structure, upper_limit, Some(test_path.clone()));
+        }
+        path.pop();
+    }
+    size
 }
 
 impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
@@ -57,7 +88,7 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
         let mut path: Vec<String> = Vec::new();
         let mut str_path = path.join("/").to_string();
 
-        let head = Item { name: str_path.clone(), size: 0, items: HashSet::new() };
+        let head = Item { size: 0, items: HashSet::new(), is_file: false };
 
         let mut structure: HashMap<String, Item> = HashMap::new();
         structure.insert(str_path.clone(), head);
@@ -76,11 +107,11 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
                         "cd" => {
                             match parts[2] {
                                 "/" => {
-                                    println!("Cd root");
+                                    // println!("Cd root");
                                     path.clear();
                                 }
                                 ".." => {
-                                    println!("Cd up");
+                                    // println!("Cd up");
                                     path.pop();
                                 }
                                 folder_name => {
@@ -95,11 +126,11 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
                                     path.push(folder_name.to_string());
 
                                     if not_found {
-                                        let folder = Item { name: folder_name.to_string(), size: 0, items: HashSet::new() };
+                                        let folder = Item { size: 0, items: HashSet::new(), is_file: false };
                                         structure.insert(path.join("/").to_string(), folder);
                                     }
 
-                                    println!("cd into {folder_name} from {str_path}");
+                                    // println!("cd into {folder_name} from {str_path}");
                                 }
                             }
                         },
@@ -124,13 +155,13 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
 
                         if not_found {
                             path.push(name.to_string());
-                            let folder = Item { name: name.clone(), size: 0, items: HashSet::new() };
+                            let folder = Item { size: 0, items: HashSet::new(), is_file: false };
 
                             structure.insert(path.join("/"), folder);
                             path.pop();
                         }
 
-                        println!("Create dir {name} at {str_path}");
+                        // println!("Create dir {name} at {str_path}");
                     } else {
                         return Err(anyhow!("Unknown symbol"))
                     }
@@ -151,13 +182,13 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
 
                         if not_found {
                             path.push(name.to_string());
-                            let file = Item { name: name.clone(), size: num_size, items: HashSet::new() };
+                            let file = Item { size: num_size, items: HashSet::new(), is_file: true };
 
                             structure.insert(path.join("/"), file);
                             path.pop();
                         }
 
-                        println!("Create file {name} size {num_size} at {str_path}");
+                        // println!("Create file {name} size {num_size} at {str_path}");
                     } else {
                         return Err(anyhow!("Unknown symbol"))
                     }
@@ -171,12 +202,26 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
     }
 
     fn part1(input: &mut HashMap<String, Item>) -> Result<i32> {
-        println!("{input:?}");
-        todo!()
+        // println!("{input:?}");
+        let result = count_sizes_that_are_at_most(input, 100000, None);
+        // println!("P1 result {result}");
+        Ok(result)
     }
 
-    fn part2(input: &mut HashMap<String, Item>, part_1_solution: i32) -> Result<i32> {
-        todo!()
+    fn part2(input: &mut HashMap<String, Item>, _part_1_solution: i32) -> Result<i32> {
+        let root_size = input.get("").cloned().unwrap().size;
+        let total_size = 70000000;
+        let target_size = 30000000;
+        let need_size = target_size - (total_size - root_size);
+
+        let mut sizes = input.values().filter(|item| !item.is_file).map(|item| item.size).collect_vec();
+        sizes.sort();
+        // println!("{sizes:?}");
+        
+        let new_sizes = sizes.iter().filter(|x| **x >= need_size).map(|x| *x).collect_vec();
+        let result = new_sizes[0];
+        // println!("P2 result {result}");
+        Ok(result)
     }
 }
 
@@ -209,7 +254,7 @@ $ ls
 4060174 j
 8033020 d.log
 5626152 d.ext
-7214296 k", 95437, 0)]
+7214296 k", 95437, 24933642)]
     fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: i32) {
         let mut input = Day7Solution::load(input).unwrap();
         let p1 = Day7Solution::part1(&mut input).unwrap();
