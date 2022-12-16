@@ -18,22 +18,33 @@ struct Item {
     items: HashSet<String>
 }
 
-fn backfill_sizes(structure: &mut HashMap<String, Item>, curr_path: String) {
+fn backfill_sizes(structure: &mut HashMap<String, Item>, curr_path: Option<String>) {
     let mut path: Vec<String> = Vec::new();
-    path.push(curr_path);
+    match curr_path {
+        Some(str) => path.push(str),
+        None => {}
+    }
     let mut size = 0;
 
-    let items = structure.get(path.join("/").as_str()).unwrap().items.iter().clone();
+    let str_path = path.join("/");
+    let curr_item = structure.get(str_path.as_str()).cloned();
+    let items = curr_item.expect(str_path.as_str()).items;
 
     for item in items {
         path.push(item.to_string());
-        backfill_sizes(structure, path.join("/"));
 
-        size += structure.get(path.join("/").as_str()).unwrap().size;
+        let test_path = path.join("/");
+        let test_item = structure.get(test_path.as_str()).cloned();
+        if test_item.expect(test_path.as_str()).size == 0 {
+            backfill_sizes(structure, Some(test_path.clone()));
+        }
+        
+        size += structure.get(test_path.as_str()).unwrap().size;
         path.pop();
     }
 
-    structure.get_mut(path.join("/").as_str()).unwrap().size = size;
+    println!("Size {size} at path {str_path}");
+    structure.get_mut(str_path.as_str()).unwrap().size = size;
 }
 
 impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
@@ -154,7 +165,7 @@ impl SolutionLinear<HashMap<String, Item>, i32, i32> for Day7Solution {
             }
         }
 
-        backfill_sizes(&mut structure, "".to_string());
+        backfill_sizes(&mut structure, None);
 
         Ok(structure)
     }
