@@ -1,4 +1,3 @@
-
 use crate::utils::solver_types::{solve_linear, SolutionLinear};
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
@@ -15,7 +14,7 @@ pub enum Direction {
     Up(usize),
     Down(usize),
     Left(usize),
-    Right(usize)
+    Right(usize),
 }
 
 impl Direction {
@@ -25,7 +24,7 @@ impl Direction {
             "D" => Direction::Down(num),
             "L" => Direction::Left(num),
             "R" => Direction::Right(num),
-            _ => panic!()
+            _ => panic!(),
         }
     }
 }
@@ -33,21 +32,21 @@ impl Direction {
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct Point {
     x: i32,
-    y: i32
+    y: i32,
 }
 
 fn propegate_rope(rope: &mut Vec<Point>) {
     for i in 1..rope.len() {
-        if (rope[i].y - rope[i-1].y).pow(2) + (rope[i].x - rope[i-1].x).pow(2) > 2  {
-            if rope[i].y > rope[i-1].y {
+        if (rope[i].y - rope[i - 1].y).pow(2) + (rope[i].x - rope[i - 1].x).pow(2) > 2 {
+            if rope[i].y > rope[i - 1].y {
                 rope[i].y -= 1;
-            } else if rope[i].y < rope[i-1].y {
+            } else if rope[i].y < rope[i - 1].y {
                 rope[i].y += 1;
             }
 
-            if rope[i].x > rope[i-1].x {
+            if rope[i].x > rope[i - 1].x {
                 rope[i].x -= 1;
-            } else if rope[i].x < rope[i-1].x {
+            } else if rope[i].x < rope[i - 1].x {
                 rope[i].x += 1;
             }
         }
@@ -55,7 +54,7 @@ fn propegate_rope(rope: &mut Vec<Point>) {
 }
 
 fn simulate(input: Vec<Direction>, rope_length: usize) -> i32 {
-    let mut rope = vec![Point { x: 0, y: 0}; rope_length];
+    let mut rope = vec![Point { x: 0, y: 0 }; rope_length];
 
     let mut set: HashSet<Point> = HashSet::new();
     set.insert(rope[rope.len() - 1].clone());
@@ -72,7 +71,7 @@ fn simulate(input: Vec<Direction>, rope_length: usize) -> i32 {
 
                     set.insert(rope[rope.len() - 1].clone());
                 }
-            },
+            }
             Direction::Down(num) => {
                 let count = num;
 
@@ -83,7 +82,7 @@ fn simulate(input: Vec<Direction>, rope_length: usize) -> i32 {
 
                     set.insert(rope[rope.len() - 1].clone());
                 }
-            },
+            }
             Direction::Left(num) => {
                 let count = num;
 
@@ -94,7 +93,7 @@ fn simulate(input: Vec<Direction>, rope_length: usize) -> i32 {
 
                     set.insert(rope[rope.len() - 1].clone());
                 }
-            },
+            }
             Direction::Right(num) => {
                 let count = num;
 
@@ -116,13 +115,14 @@ fn simulate(input: Vec<Direction>, rope_length: usize) -> i32 {
 
 impl SolutionLinear<Vec<Direction>, i32, i32> for Day9Solution {
     fn load(input: &str) -> Result<Vec<Direction>> {
-        Ok(
-            input.lines().map(|x| {
+        Ok(input
+            .lines()
+            .map(|x| {
                 let parts = x.split(" ").collect_vec();
                 let num = parts[1].parse::<usize>();
                 Direction::make(parts[0], num.unwrap())
-            }).collect_vec()
-        )
+            })
+            .collect_vec())
     }
 
     fn part1(input: &mut Vec<Direction>) -> Result<i32> {
@@ -143,22 +143,30 @@ mod tests {
     use rstest::rstest;
 
     #[rstest]
-    #[case("R 4
+    #[case(
+        "R 4
 U 4
 L 3
 D 1
 R 4
 D 1
 L 5
-R 2", 13, 1)]
-    #[case("R 5
+R 2",
+        13,
+        1
+    )]
+    #[case(
+        "R 5
 U 8
 L 8
 D 3
 R 17
 D 10
 L 25
-U 20", 88, 36)]
+U 20",
+        88,
+        36
+    )]
     fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: i32) {
         let mut input = Day9Solution::load(input).unwrap();
         let p1 = Day9Solution::part1(&mut input).unwrap();
@@ -169,7 +177,7 @@ U 20", 88, 36)]
     }
 }
 
-/* 
+/*
 ..........................
 ..........................
 ..........................
@@ -306,7 +314,7 @@ U 20", 88, 36)]
 ......
 ......
 ....H.
-4321..  
+4321..
 
 ......
 ......
@@ -318,13 +326,13 @@ U 20", 88, 36)]
 ......
 ....H.
 ....1.
-432... 
+432...
 
 ......
 ......
 ....H.
 ...21.
-43.... 
+43....
 
 ......
 ......

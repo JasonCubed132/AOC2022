@@ -1,4 +1,3 @@
-
 use crate::utils::solver_types::{solve_linear, SolutionLinear};
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
@@ -9,9 +8,10 @@ pub fn day10(input: &str) -> Result<f32> {
     solve_linear::<Day10Solution, _, _, _>(input)
 }
 
+#[derive(Debug, Copy, Clone)]
 enum Instruction {
     Addx(i32),
-    Noop
+    Noop,
 }
 
 impl Instruction {
@@ -21,16 +21,16 @@ impl Instruction {
             "addx" => {
                 let num = parts[1].parse::<i32>()?;
                 return Ok(Instruction::Addx(num));
-            },
+            }
             "noop" => {
                 return Ok(Instruction::Noop);
-            },
-            _ => Err(anyhow!("Unknown seq {0}", parts[0]))
+            }
+            _ => Err(anyhow!("Unknown seq {0}", parts[0])),
         }
     }
 }
 
-impl SolutionLinear<Vec<Instruction>, i32, i32> for Day10Solution {
+impl SolutionLinear<Vec<Instruction>, i32, String> for Day10Solution {
     fn load(input: &str) -> Result<Vec<Instruction>> {
         let mut output: Vec<Instruction> = Vec::new();
 
@@ -42,11 +42,89 @@ impl SolutionLinear<Vec<Instruction>, i32, i32> for Day10Solution {
     }
 
     fn part1(input: &mut Vec<Instruction>) -> Result<i32> {
-        todo!()
+        let mut pc = 0;
+        let mut clock_cycle = 0;
+        let mut x = 1;
+        let mut instr_in_progress = false;
+        let mut signal_strength = 0;
+
+        // Each loop should be one clock cycle
+        loop {
+            clock_cycle += 1;
+
+            if clock_cycle % 40 == 20 {
+                signal_strength += (clock_cycle) * x;
+            }
+
+            match input[pc] {
+                Instruction::Addx(val) => {
+                    if instr_in_progress {
+                        instr_in_progress = false;
+                        x += val;
+                        pc += 1;
+                    } else {
+                        instr_in_progress = true;
+                    }
+                }
+                Instruction::Noop => {
+                    pc += 1;
+                }
+            }
+
+            if pc >= input.len() {
+                break;
+            }
+        }
+
+        println!("Signal strength: {signal_strength}");
+
+        Ok(signal_strength)
     }
 
-    fn part2(input: &mut Vec<Instruction>, part_1_solution: i32) -> Result<i32> {
-        todo!()
+    fn part2(input: &mut Vec<Instruction>, _part_1_solution: i32) -> Result<String> {
+        let mut pc = 0;
+        let mut clock_cycle = 0;
+        let mut x = 1;
+        let mut instr_in_progress = false;
+        let mut screen: Vec<Vec<char>> = Vec::new();
+        let mut row: Vec<char> = Vec::new();
+
+        // Each loop should be one clock cycle
+        loop {
+            clock_cycle += 1;
+
+            if clock_cycle - 1 >= x - 1 && clock_cycle - 1 <= x + 1 {
+                row.push('#');
+            } else {
+                row.push('.');
+            }
+
+            if clock_cycle % 40 == 0 {
+                screen.push(row);
+                row = Vec::new();
+            }
+
+            match input[pc] {
+                Instruction::Addx(val) => {
+                    if instr_in_progress {
+                        instr_in_progress = false;
+                        x += val;
+                        pc += 1;
+                    } else {
+                        instr_in_progress = true;
+                    }
+                }
+                Instruction::Noop => {
+                    pc += 1;
+                }
+            }
+
+            if pc >= input.len() {
+                break;
+            }
+        }
+
+        Ok(screen.iter().map(|row| row.iter().join("")).join("\n"))
     }
 }
 
@@ -57,7 +135,8 @@ mod tests {
     use rstest::rstest;
 
     #[rstest]
-    #[case("addx 15
+    #[case(
+        "addx 15
 addx -11
 addx 6
 addx -3
@@ -202,8 +281,18 @@ addx -6
 addx -11
 noop
 noop
-noop", 13140, 0)]
-    fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: i32) {
+noop",
+        13140,
+        ""
+    )]
+    #[case(
+        "noop
+addx 3
+addx -5",
+        0,
+        ""
+    )]
+    fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: String) {
         let mut input = Day10Solution::load(input).unwrap();
         let p1 = Day10Solution::part1(&mut input).unwrap();
         let p2 = Day10Solution::part2(&mut input, p1).unwrap();
