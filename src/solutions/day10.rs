@@ -93,7 +93,8 @@ impl SolutionLinear<Vec<Instruction>, i32, String> for Day10Solution {
         loop {
             clock_cycle += 1;
 
-            if clock_cycle - 1 >= x - 1 && clock_cycle - 1 <= x + 1 {
+            let idx = (clock_cycle - 1) % 40;
+            if idx >= x - 1 && idx <= x + 1 {
                 row.push('#');
             } else {
                 row.push('.');
@@ -124,7 +125,11 @@ impl SolutionLinear<Vec<Instruction>, i32, String> for Day10Solution {
             }
         }
 
-        Ok(screen.iter().map(|row| row.iter().join("")).join("\n"))
+        let result = screen.iter().map(|row| row.iter().join("")).join("\n");
+
+        println!("{result}");
+
+        Ok(result)
     }
 }
 
@@ -283,7 +288,12 @@ noop
 noop
 noop",
         13140,
-        ""
+        "##..##..##..##..##..##..##..##..##..##..
+###...###...###...###...###...###...###.
+####....####....####....####....####....
+#####.....#####.....#####.....#####.....
+######......######......######......####
+#######.......#######.......#######....."
     )]
     #[case(
         "noop
