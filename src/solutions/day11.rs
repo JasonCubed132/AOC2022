@@ -1,6 +1,7 @@
 use crate::utils::solver_types::{solve_linear, SolutionLinear};
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
+use num::{integer, Integer};
 use regex::Regex;
 
 pub struct Day11Solution {}
@@ -11,7 +12,7 @@ pub fn day11(input: &str) -> Result<f32> {
 
 #[derive(Debug, Clone)]
 enum Val {
-    Num(i32),
+    Num(i64),
     Own,
 }
 
@@ -20,10 +21,10 @@ impl Val {
         if input == "old" {
             return Val::Own;
         }
-        let val = input.parse::<i32>().unwrap();
+        let val = input.parse::<i64>().unwrap();
         Val::Num(val)
     }
-    fn get(&self, old: i32) -> i32 {
+    fn get(&self, old: i64) -> i64 {
         match self {
             Val::Num(num) => {
                 return *num;
@@ -55,7 +56,7 @@ impl Op {
             }
         }
     }
-    fn get(&self, old: i32) -> i32 {
+    fn get(&self, old: i64) -> i64 {
         match self {
             Op::Add(left, right) => {
                 return left.get(old) + right.get(old);
@@ -72,12 +73,12 @@ impl Op {
 
 #[derive(Debug, Clone)]
 struct ThrowTester {
-    is_div_by: i32,
+    is_div_by: i64,
     true_target: usize,
     false_target: usize,
 }
 impl ThrowTester {
-    fn throw_to(&self, value: i32) -> usize {
+    fn throw_to(&self, value: i64) -> usize {
         let div_result = value % self.is_div_by;
         if div_result == 0 {
             self.true_target
@@ -89,12 +90,12 @@ impl ThrowTester {
 
 #[derive(Debug, Clone)]
 struct Monkey {
-    items: Vec<i32>,
+    items: Vec<i64>,
     op: Op,
     tester: ThrowTester,
 }
 
-impl SolutionLinear<Vec<Monkey>, i32, i32> for Day11Solution {
+impl SolutionLinear<Vec<Monkey>, i64, i64> for Day11Solution {
     fn load(input: &str) -> Result<Vec<Monkey>> {
         let unparsed_monkeys = input.lines().chunks(7);
 
@@ -130,14 +131,14 @@ impl SolutionLinear<Vec<Monkey>, i32, i32> for Day11Solution {
             let items_str = items_match[1].to_string();
             let items = items_str
                 .split(", ")
-                .map(|x| x.parse::<i32>().unwrap())
+                .map(|x| x.parse::<i64>().unwrap())
                 .collect_vec();
 
             let op_match = op_re.captures(unparsed_monkey_vec[2]).unwrap();
             let op = Op::make(&op_match[1], &op_match[2], &op_match[3]);
 
             let test_match = test_re.captures(unparsed_monkey_vec[3]).unwrap();
-            let test_val = test_match[1].parse::<i32>().unwrap();
+            let test_val = test_match[1].parse::<i64>().unwrap();
 
             let test_true_match = test_true_re.captures(unparsed_monkey_vec[4]).unwrap();
             let test_true_val = test_true_match[1].parse::<usize>().unwrap();
@@ -164,10 +165,10 @@ impl SolutionLinear<Vec<Monkey>, i32, i32> for Day11Solution {
         Ok(parsed_monkeys)
     }
 
-    fn part1(input: &mut Vec<Monkey>) -> Result<i32> {
+    fn part1(input: &mut Vec<Monkey>) -> Result<i64> {
         let mut monkeys = input.clone();
         let mut round = 1;
-        let mut inspection_counts: Vec<i32> = vec![0; monkeys.len()];
+        let mut inspection_counts: Vec<i64> = vec![0; monkeys.len()];
         loop {
             for i in 0..monkeys.len() {
                 loop {
@@ -209,8 +210,65 @@ impl SolutionLinear<Vec<Monkey>, i32, i32> for Day11Solution {
         Ok(result)
     }
 
-    fn part2(input: &mut Vec<Monkey>, _part_1_solution: i32) -> Result<i32> {
-        todo!()
+    fn part2(input: &mut Vec<Monkey>, _part_1_solution: i64) -> Result<i64> {
+        let mut monkeys = input.clone();
+        let mut round = 1;
+        let mut inspection_counts: Vec<i64> = vec![0; monkeys.len()];
+
+        // Fascinating
+        let mut lcm_val = 1;
+        for i in 0..monkeys.len() {
+            lcm_val = lcm_val.lcm(&monkeys[i].tester.is_div_by);
+            print!("{} ", &monkeys[i].tester.is_div_by);
+        }
+        println!("LCM: {}", lcm_val);
+
+        loop {
+            for i in 0..monkeys.len() {
+                loop {
+                    if monkeys[i].items.len() < 1 {
+                        break;
+                    }
+
+                    let item = monkeys[i].items[0];
+                    // println!("{:?} {}", input[i].op, item);
+                    let inspection_result = input[i].op.get(item);
+                    let small_result = inspection_result % lcm_val;
+
+                    let throw_target = input[i].tester.throw_to(inspection_result);
+                    inspection_counts[i] += 1;
+
+                    monkeys[i].items.remove(0);
+                    monkeys[throw_target].items.push(small_result);
+                }
+            }
+
+            // if round % 1000 == 0 {
+            //     println!("Result of round {round}");
+            //     for i in 0..monkeys.len() {
+            //         print!("Monkey {i}: ");
+            //         println!("{:?}", monkeys[i].items);
+            //     }
+            // }
+
+            if round >= 10000 {
+                break;
+            }
+
+            round += 1;
+        }
+
+        inspection_counts.sort();
+
+        assert!(inspection_counts.len() >= 2);
+
+        println!("{:?}", inspection_counts);
+
+        let a: i64 = inspection_counts[inspection_counts.len() - 1].into();
+        let b: i64 = inspection_counts[inspection_counts.len() - 2].into();
+        let result: i64 = a * b;
+        println!("{}", result);
+        Ok(result)
     }
 }
 
@@ -250,9 +308,9 @@ Test: divisible by 17
     If true: throw to monkey 0
     If false: throw to monkey 1",
         10605,
-        0
+        2713310158
     )]
-    fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: i32) {
+    fn validate_linear(#[case] input: &str, #[case] expected_1: i64, #[case] expected_2: i64) {
         let mut input = Day11Solution::load(input).unwrap();
         let p1 = Day11Solution::part1(&mut input).unwrap();
         let p2 = Day11Solution::part2(&mut input, p1).unwrap();
