@@ -23,6 +23,16 @@ impl Val {
         let val = input.parse::<i32>().unwrap();
         Val::Num(val)
     }
+    fn get(&self, old: i32) -> i32 {
+        match self {
+            Val::Num(num) => {
+                return *num;
+            }
+            Val::Own => {
+                return old;
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -45,20 +55,43 @@ impl Op {
             }
         }
     }
+    fn get(&self, old: i32) -> i32 {
+        match self {
+            Op::Add(left, right) => {
+                return left.get(old) + right.get(old);
+            }
+            Op::Sub(left, right) => {
+                return left.get(old) - right.get(old);
+            }
+            Op::Mul(left, right) => {
+                return left.get(old) * right.get(old);
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
-struct throw_tester {
+struct ThrowTester {
     is_div_by: i32,
     true_target: usize,
     false_target: usize,
+}
+impl ThrowTester {
+    fn throw_to(&self, value: i32) -> usize {
+        let div_result = value % self.is_div_by;
+        if div_result == 0 {
+            self.true_target
+        } else {
+            self.false_target
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
 struct Monkey {
     items: Vec<i32>,
     op: Op,
-    tester: throw_tester,
+    tester: ThrowTester,
 }
 
 impl SolutionLinear<Vec<Monkey>, i32, i32> for Day11Solution {
@@ -112,7 +145,7 @@ impl SolutionLinear<Vec<Monkey>, i32, i32> for Day11Solution {
             let test_false_match = test_false_re.captures(unparsed_monkey_vec[5]).unwrap();
             let test_false_val = test_false_match[1].parse::<usize>().unwrap();
 
-            let tester = throw_tester {
+            let tester = ThrowTester {
                 is_div_by: test_val,
                 true_target: test_true_val,
                 false_target: test_false_val,
@@ -132,6 +165,37 @@ impl SolutionLinear<Vec<Monkey>, i32, i32> for Day11Solution {
     }
 
     fn part1(input: &mut Vec<Monkey>) -> Result<i32> {
+        let mut monkeys = input.clone();
+        let mut round = 1;
+        loop {
+            for i in 0..monkeys.len() {
+                loop {
+                    if monkeys[i].items.len() <= 1 {
+                        break;
+                    }
+
+                    let item = monkeys[i].items[0];
+                    let inspection_result = input[i].op.get(item);
+                    let bored_result = inspection_result / 3;
+                    let throw_target = input[i].tester.throw_to(bored_result);
+
+                    monkeys[i].items.remove(0);
+                    monkeys[throw_target].items.push(bored_result);
+                }
+            }
+
+            println!("Result of round {round}");
+            for i in 0..monkeys.len() {
+                print!("Monkey {i}: ");
+                println!("{:?}", monkeys[i].items);
+            }
+
+            if round >= 20 {
+                break;
+            }
+
+            round += 1;
+        }
         todo!()
     }
 
