@@ -167,10 +167,11 @@ impl SolutionLinear<Vec<Monkey>, i32, i32> for Day11Solution {
     fn part1(input: &mut Vec<Monkey>) -> Result<i32> {
         let mut monkeys = input.clone();
         let mut round = 1;
+        let mut inspection_counts: Vec<i32> = vec![0; monkeys.len()];
         loop {
             for i in 0..monkeys.len() {
                 loop {
-                    if monkeys[i].items.len() <= 1 {
+                    if monkeys[i].items.len() < 1 {
                         break;
                     }
 
@@ -178,17 +179,18 @@ impl SolutionLinear<Vec<Monkey>, i32, i32> for Day11Solution {
                     let inspection_result = input[i].op.get(item);
                     let bored_result = inspection_result / 3;
                     let throw_target = input[i].tester.throw_to(bored_result);
+                    inspection_counts[i] += 1;
 
                     monkeys[i].items.remove(0);
                     monkeys[throw_target].items.push(bored_result);
                 }
             }
 
-            println!("Result of round {round}");
-            for i in 0..monkeys.len() {
-                print!("Monkey {i}: ");
-                println!("{:?}", monkeys[i].items);
-            }
+            // println!("Result of round {round}");
+            // for i in 0..monkeys.len() {
+            //     print!("Monkey {i}: ");
+            //     println!("{:?}", monkeys[i].items);
+            // }
 
             if round >= 20 {
                 break;
@@ -196,7 +198,15 @@ impl SolutionLinear<Vec<Monkey>, i32, i32> for Day11Solution {
 
             round += 1;
         }
-        todo!()
+
+        inspection_counts.sort();
+
+        assert!(inspection_counts.len() >= 2);
+
+        let result = inspection_counts[inspection_counts.len() - 1]
+            * inspection_counts[inspection_counts.len() - 2];
+        println!("{}", result);
+        Ok(result)
     }
 
     fn part2(input: &mut Vec<Monkey>, _part_1_solution: i32) -> Result<i32> {
