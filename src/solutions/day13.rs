@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::{cmp::Ordering, collections::VecDeque};
 
 use crate::utils::solver_types::{solve_linear, SolutionLinear};
 use anyhow::{anyhow, Result};
@@ -15,7 +15,7 @@ enum Token {
     NumTemp,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum Item {
     Num(i32),
     List(VecDeque<Item>),
@@ -238,7 +238,6 @@ impl SolutionLinear<Vec<(Item, Item)>, i32, i32> for Day13Solution {
             let a = process(item[0]);
             let b = process(item[1]);
             output.push((a, b));
-            println!("{:?}", output[output.len() - 1]);
         }
 
         Ok(output)
@@ -256,13 +255,51 @@ impl SolutionLinear<Vec<(Item, Item)>, i32, i32> for Day13Solution {
             }
         }
 
-        println!("{}", sum);
-
         Ok(sum)
     }
 
-    fn part2(input: &mut Vec<(Item, Item)>, part_1_solution: i32) -> Result<i32> {
-        todo!()
+    fn part2(input: &mut Vec<(Item, Item)>, _part_1_solution: i32) -> Result<i32> {
+        let pairs = input.clone();
+        let mut packets: Vec<Item> = Vec::new();
+        for (a, b) in pairs {
+            packets.push(a);
+            packets.push(b);
+        }
+
+        let divider_1 = process("[[2]]");
+        packets.push(divider_1.clone());
+        let divider_2 = process("[[6]]");
+        packets.push(divider_2.clone());
+
+        packets.sort_by(|a, b| {
+            let a_val = a.clone();
+            let b_val = b.clone();
+            match compare_pair((a_val, b_val)) {
+                Some(val) => {
+                    if val {
+                        return Ordering::Less;
+                    } else {
+                        return Ordering::Greater;
+                    }
+                }
+                None => return Ordering::Equal,
+            }
+        });
+
+        let mut div_1_idx = 0;
+        let mut div_2_idx = 0;
+
+        for i in 0..packets.len() {
+            if packets[i] == divider_1 {
+                div_1_idx = i + 1;
+            } else if packets[i] == divider_2 {
+                div_2_idx = i + 1;
+            }
+        }
+
+        let result: i32 = (div_1_idx * div_2_idx).try_into().unwrap();
+
+        Ok(result)
     }
 }
 
@@ -298,7 +335,7 @@ mod tests {
 [1,[2,[3,[4,[5,6,7]]]],8,9]
 [1,[2,[3,[4,[5,6,0]]]],8,9]",
         13,
-        0
+        140
     )]
     fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: i32) {
         let mut input = Day13Solution::load(input).unwrap();
