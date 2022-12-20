@@ -6,7 +6,7 @@ use itertools::Itertools;
 
 pub struct Day13Solution {}
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Copy)]
 enum Token {
     LBRA,
     RBRA,
@@ -171,6 +171,54 @@ fn process(input: &str) -> Item {
     parse_result
 }
 
+fn compare_pair(pair: (Item, Item)) -> Option<bool> {
+    match pair {
+        (Item::List(list_a), Item::List(list_b)) => {
+            return compare_lists(list_a, list_b);
+        }
+        (Item::List(list_a), Item::Num(num_b)) => {
+            let mut list_b: VecDeque<Item> = VecDeque::new();
+            list_b.push_back(Item::Num(num_b));
+            return compare_lists(list_a, list_b);
+        }
+        (Item::Num(num_a), Item::List(list_b)) => {
+            let mut list_a: VecDeque<Item> = VecDeque::new();
+            list_a.push_back(Item::Num(num_a));
+            return compare_lists(list_a, list_b);
+        }
+        (Item::Num(num_a), Item::Num(num_b)) => {
+            if num_a < num_b {
+                return Some(true);
+            } else if num_a > num_b {
+                return Some(false);
+            } else {
+                return None;
+            }
+        }
+    }
+}
+
+fn compare_lists(list_a: VecDeque<Item>, list_b: VecDeque<Item>) -> Option<bool> {
+    let mut idx = 0;
+    loop {
+        if idx >= list_a.len() && idx >= list_b.len() {
+            return None;
+        }
+        if idx >= list_a.len() {
+            return Some(true);
+        } else if idx >= list_b.len() {
+            return Some(false);
+        }
+
+        match compare_pair((list_a[idx].clone(), list_b[idx].clone())) {
+            Some(result) => return Some(result),
+            None => {}
+        }
+
+        idx += 1;
+    }
+}
+
 impl SolutionLinear<Vec<(Item, Item)>, i32, i32> for Day13Solution {
     fn load(input: &str) -> Result<Vec<(Item, Item)>> {
         let raw_groups = input.lines().group_by(|x| x.to_string() == "");
@@ -197,9 +245,20 @@ impl SolutionLinear<Vec<(Item, Item)>, i32, i32> for Day13Solution {
     }
 
     fn part1(input: &mut Vec<(Item, Item)>) -> Result<i32> {
-        for (a, b) in input {}
+        let pairs = input.clone();
+        let mut sum: i32 = 0;
 
-        Err(anyhow!("Yet to be implemented"))
+        for i in 0..pairs.len() {
+            let pair = pairs[i].clone();
+            if compare_pair(pair).unwrap() {
+                let val: i32 = i.try_into().unwrap();
+                sum += val + 1;
+            }
+        }
+
+        println!("{}", sum);
+
+        Ok(sum)
     }
 
     fn part2(input: &mut Vec<(Item, Item)>, part_1_solution: i32) -> Result<i32> {
