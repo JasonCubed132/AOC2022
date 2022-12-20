@@ -16,18 +16,22 @@ struct Point {
     y: usize,
 }
 
-// fn format_grid(input: Vec<Vec<i32>>) -> String {
-//     let mut out = String::new();
-
-//     for row in input {
-//         let mut out_row: Vec<String> =  Vec::new();
-//         for item in row {
-
-//         }
-//     }
-
-//     out
-// }
+fn format_grid(input: Vec<Vec<i32>>) -> String {
+    input
+        .iter()
+        .map(|row| {
+            row.iter()
+                .map(|item| {
+                    if item < &0 {
+                        format!("{:->3}", "")
+                    } else {
+                        format!("{:03}", item)
+                    }
+                })
+                .join("|")
+        })
+        .join("\n")
+}
 
 impl SolutionLinear<(Vec<Vec<i32>>, Point, Point), i32, i32> for Day12Solution {
     fn load(input: &str) -> Result<(Vec<Vec<i32>>, Point, Point)> {
@@ -118,9 +122,7 @@ impl SolutionLinear<(Vec<Vec<i32>>, Point, Point), i32, i32> for Day12Solution {
             }
         }
 
-        for row in path_map.clone() {
-            println!("{:?}", row);
-        }
+        println!("{}", format_grid(path_map.clone()));
 
         let result = path_map[end.y][end.x];
         println!("{}", result);
