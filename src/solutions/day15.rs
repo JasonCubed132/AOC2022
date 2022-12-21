@@ -1,4 +1,7 @@
-use std::fmt::{write, Display};
+use std::{
+    collections::HashSet,
+    fmt::{write, Display},
+};
 
 use crate::utils::solver_types::{solve_linear, SolutionLinear};
 use anyhow::{anyhow, Result};
@@ -11,10 +14,16 @@ pub fn day15(input: &str) -> Result<f32> {
     solve_linear::<Day15Solution, _, _, _>(input)
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Point {
     x: isize,
     y: isize,
+}
+
+impl Point {
+    fn distance_to(&self, other: &Point) -> isize {
+        (self.x - other.x).abs() + (self.y - other.y).abs()
+    }
 }
 
 impl Display for Point {
@@ -59,17 +68,53 @@ impl SolutionLinear<(Vec<(Point, Point)>, isize), i32, i32> for Day15Solution {
     fn part1(input: &mut (Vec<(Point, Point)>, isize)) -> Result<i32> {
         let (data, target_row) = input.clone();
 
-        println!(
-            "{}",
-            data.iter()
-                .map(|(s, b)| s.to_string() + " " + &b.to_string())
-                .join("\n")
-        );
-        println!("{}", target_row);
-        todo!()
+        let mut distances = Vec::new();
+        let mut beacons = HashSet::new();
+
+        for (sensor, beacon) in data.clone() {
+            let distance = sensor.distance_to(&beacon);
+            distances.push((sensor, distance));
+            beacons.insert(beacon);
+        }
+
+        let mut min_x = distances[0].0.x - distances[0].1;
+        let mut max_x = min_x;
+
+        for (sensor, distance) in distances.clone() {
+            let min_x_tmp = sensor.x - distance;
+            let max_x_tmp = sensor.x + distance;
+
+            if min_x > min_x_tmp {
+                min_x = min_x_tmp;
+            }
+            if max_x < max_x_tmp {
+                max_x = max_x_tmp;
+            }
+        }
+
+        // println!("{} {}", min_x, max_x);
+
+        let mut count = 0;
+
+        for i in min_x..max_x + 1 {
+            let p = Point {
+                x: i,
+                y: target_row,
+            };
+
+            for (sensor, distance) in &distances {
+                if sensor.distance_to(&p) <= *distance && !beacons.contains(&p) {
+                    count += 1;
+                    break;
+                }
+            }
+        }
+
+        println!("{}", count);
+        Ok(count)
     }
 
-    fn part2(input: &mut (Vec<(Point, Point)>, isize), part_1_solution: i32) -> Result<i32> {
+    fn part2(input: &mut (Vec<(Point, Point)>, isize), _part_1_solution: i32) -> Result<i32> {
         todo!()
     }
 }
@@ -97,7 +142,7 @@ Sensor at x=17, y=20: closest beacon is at x=21, y=22
 Sensor at x=16, y=7: closest beacon is at x=15, y=3
 Sensor at x=14, y=3: closest beacon is at x=15, y=3
 Sensor at x=20, y=1: closest beacon is at x=15, y=3",
-        0,
+        26,
         0
     )]
     fn validate_linear(#[case] input: &str, #[case] expected_1: i32, #[case] expected_2: i32) {
