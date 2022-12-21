@@ -1,4 +1,6 @@
 use std::{
+    cell,
+    cmp::Ordering,
     collections::HashSet,
     fmt::{write, Display},
 };
@@ -71,47 +73,101 @@ impl SolutionLinear<(Vec<(Point, Point)>, isize), i32, i32> for Day15Solution {
         let mut distances = Vec::new();
         let mut beacons = HashSet::new();
 
+        let mut cells_on_target_row_in_use = HashSet::new();
+
         for (sensor, beacon) in data.clone() {
             let distance = sensor.distance_to(&beacon);
             distances.push((sensor, distance));
             beacons.insert(beacon);
+
+            if sensor.y == target_row {
+                cells_on_target_row_in_use.insert(sensor.x);
+            }
+            if beacon.y == target_row {
+                cells_on_target_row_in_use.insert(beacon.x);
+            }
         }
 
-        let mut min_x = distances[0].0.x - distances[0].1;
-        let mut max_x = min_x;
+        // println!("{:?}", cells_on_target_row_in_use);
+
+        let mut covered_ranges = Vec::new();
 
         for (sensor, distance) in distances.clone() {
-            let min_x_tmp = sensor.x - distance;
-            let max_x_tmp = sensor.x + distance;
+            let y_dist = (sensor.y - target_row).abs();
+            let x_dist = distance - y_dist;
 
-            if min_x > min_x_tmp {
-                min_x = min_x_tmp;
+            if x_dist < 0 {
+                continue;
             }
-            if max_x < max_x_tmp {
-                max_x = max_x_tmp;
+
+            let left_x = sensor.x - x_dist;
+            let right_x = sensor.x + x_dist;
+            covered_ranges.push((left_x, right_x));
+            // println!(
+            //     "{} {} {} {} {} {}",
+            //     sensor, distance, y_dist, x_dist, left_x, right_x
+            // );
+        }
+
+        if covered_ranges.len() == 0 {
+            return Ok(0);
+        }
+
+        covered_ranges.sort_by(|(a1, a2), (b1, b2)| match a1.cmp(b1) {
+            Ordering::Equal => return a2.cmp(b2),
+            a => {
+                return a;
+            }
+        });
+
+        // println!("{:?}", covered_ranges);
+
+        let mut resolved_ranges = Vec::new();
+
+        let mut curr_range = covered_ranges.remove(0);
+        // println!("Curr range: {:?}", curr_range);
+        let mut pushed_modified_range;
+
+        loop {
+            let next_range = covered_ranges.remove(0);
+            // println!("Examining: {:?}", next_range);
+
+            if curr_range.1 + 1 >= next_range.0 {
+                pushed_modified_range = false;
+                if curr_range.1 < next_range.1 {
+                    // Skip reassignment if can overlapping
+                    curr_range = (curr_range.0, next_range.1);
+                }
+                // println!("Curr range: {:?}", curr_range);
+            } else {
+                resolved_ranges.push(curr_range);
+                pushed_modified_range = true;
+            }
+
+            if covered_ranges.len() == 0 {
+                break;
             }
         }
 
-        // println!("{} {}", min_x, max_x);
+        if !pushed_modified_range {
+            resolved_ranges.push(curr_range)
+        }
+
+        // println!("{:?}", resolved_ranges);
 
         let mut count = 0;
 
-        for i in min_x..max_x + 1 {
-            let p = Point {
-                x: i,
-                y: target_row,
-            };
-
-            for (sensor, distance) in &distances {
-                if sensor.distance_to(&p) <= *distance && !beacons.contains(&p) {
-                    count += 1;
-                    break;
+        for (a, b) in resolved_ranges {
+            count += (b - a) + 1;
+            for &item in cells_on_target_row_in_use.iter() {
+                if a <= item && item <= b {
+                    count -= 1;
                 }
             }
         }
 
-        println!("{}", count);
-        Ok(count)
+        // println!("{}", count);
+        Ok(count.try_into().unwrap())
     }
 
     fn part2(input: &mut (Vec<(Point, Point)>, isize), _part_1_solution: i32) -> Result<i32> {
