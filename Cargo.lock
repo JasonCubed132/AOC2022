@@ -24,6 +24,7 @@ dependencies = [
  "anyhow",
  "clap",
  "itertools",
+ "left-pad",
  "num",
  "regex",
  "rstest",
@@ -258,6 +259,12 @@ checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
 dependencies = [
  "either",
 ]
+
+[[package]]
+name = "left-pad"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97235f118becc143458c5f59c34a66dea2cc303f14348c5c7f3072bbf786e62b"
 
 [[package]]
 name = "libc"

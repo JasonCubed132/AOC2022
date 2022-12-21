@@ -13,6 +13,7 @@ itertools = "0.10.5"
 regex = "1"
 transpose = "0.2.2"
 num = "0.4.0"
+left-pad = "1.0.1"
 
 [dev-dependencies]
 rstest = "0.15.0"

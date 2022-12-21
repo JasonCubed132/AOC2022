@@ -16,22 +16,22 @@ struct Point {
     y: usize,
 }
 
-fn format_grid(input: Vec<Vec<i32>>) -> String {
-    input
-        .iter()
-        .map(|row| {
-            row.iter()
-                .map(|item| {
-                    if item < &0 {
-                        format!("{:->3}", "")
-                    } else {
-                        format!("{:03}", item)
-                    }
-                })
-                .join("|")
-        })
-        .join("\n")
-}
+// fn format_grid(input: Vec<Vec<i32>>) -> String {
+//     input
+//         .iter()
+//         .map(|row| {
+//             row.iter()
+//                 .map(|item| {
+//                     if item < &0 {
+//                         format!("{:->3}", "")
+//                     } else {
+//                         format!("{:03}", item)
+//                     }
+//                 })
+//                 .join("|")
+//         })
+//         .join("\n")
+// }
 
 fn get_distance(height_grid: Vec<Vec<i32>>, start: Point, end: Point) -> i32 {
     let height = height_grid.len();
